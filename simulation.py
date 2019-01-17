@@ -6,14 +6,16 @@ from time import sleep
 
 
 class SpaceObject:
-    def __init__(self, x, y, mass, *args):
+    def __init__(self, x, y, mass, radius, *args):
         self.x = x
         self.y = y
+        self.oldx = x
+        self.oldy = y
         self.mass = mass
+        self.radius = radius
 
         if len(args) == 0 :
             self.color = color_rgb(randrange(256), randrange(256), randrange(256))
-
         elif len(args) == 1 :
             self.color = args[0]
 
@@ -27,6 +29,7 @@ class Universe:
         self.infoHeight = 16
         self.interation = 0
         self.myobjects = []
+        self.ghost = []
         self.bgcolor = 'black'
         if len(args) == 2 :
             self.createWindow(args[0], args[1])
@@ -71,29 +74,50 @@ class Universe:
         #self.clearInfoList()
         self.infoText.setText(self.interation)
 
-    def newObject(self, x, y, mass, *args):
+    def newObject(self, x, y, mass, radius, *args):
         if len(args) == 0 :
-            self.myobjects.append(SpaceObject(x, y, mass))
+            self.myobjects.append(SpaceObject(x, y, mass, radius))
         elif len(args) == 1 :
-            self.myobjects.append(SpaceObject(x, y, mass, args[0]))
+            self.myobjects.append(SpaceObject(x, y, mass, radius, args[0]))
 
-        
-
+    def firstShow(self):
+        for i in range(len(self.myobjects)):
+            thisObj = self.myobjects[i]
+            self.ghost.append(Circle(Point(thisObj.x, thisObj.y), thisObj.radius))
+            self.ghost[i].setFill(thisObj.color)
+            self.ghost[i].setOutline('green')
+            self.ghost[i].draw(self.window)
 
     def show(self):
         self.showInfo()
+        for i in range(len(self.myobjects) - 1):
+            pass
 
-    def quit():
+    def calculatePhysics(self):
+        for i in range(len(self.myobjects)):
+            pass
+
+    def quit(self):
         self.status = 2
         self.__del__()
-        
+        print('-- Exit! --')
+        raise SystemExit(0)
+
     def universeLoop(self):
+        self.firstShow()
         while True :
             self.interation += 1
+            self.calculatePhysics()
             self.show()
             time.sleep(0.5)
-            if self.interation == 3:
+
+            if self.interation == 5:
                 self.quit()
+
+    def recordingInformation(self):
+        objCount = len(self.myobjects)
+        self.distance = [[0] * objCount for i in range(objCount)]
+        self.influence = [[0] * objCount for i in range(objCount)]
 
     def preStart(self):
         self.clearWindow()
@@ -109,8 +133,10 @@ class Universe:
         self.preStart()
         self.status = 1
 
-        self.newObject(300, 300, 20)
+        self.newObject(300, 300, 20, 15, 'red')
+        self.newObject(400, 200, 50, 10, 'blue')
 
+        self.recordingInformation()
         self.universeLoop()
 
     def __del__(self):
@@ -124,6 +150,8 @@ def main():
     print('-- Simulation of the Universe! --')
     unv = Universe(900, 600)
     unv.startSimulation()
+
+    #raise SystemExit(1)
 
 
 
