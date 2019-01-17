@@ -2,17 +2,20 @@ from graphics import *
 from random import randint
 from random import randrange
 from time import sleep
+from math import sin, cos, floor
 
 
 
 class SpaceObject:
-    def __init__(self, x, y, mass, radius, *args):
+    def __init__(self, x, y, mass, radius, speed, speedDirection, *args):
         self.x = x
         self.y = y
         self.oldx = x
         self.oldy = y
         self.mass = mass
         self.radius = radius
+        self.speedDirection = speedDirection
+        self.speed = speed
 
         if len(args) == 0 :
             self.color = color_rgb(randrange(256), randrange(256), randrange(256))
@@ -74,11 +77,11 @@ class Universe:
         #self.clearInfoList()
         self.infoText.setText(self.interation)
 
-    def newObject(self, x, y, mass, radius, *args):
+    def newObject(self, x, y, mass, radius, speed, speedDirection, *args):
         if len(args) == 0 :
-            self.myobjects.append(SpaceObject(x, y, mass, radius))
+            self.myobjects.append(SpaceObject(x, y, mass, radius, speed, speedDirection))
         elif len(args) == 1 :
-            self.myobjects.append(SpaceObject(x, y, mass, radius, args[0]))
+            self.myobjects.append(SpaceObject(x, y, mass, radius, speed, speedDirection, args[0]))
 
     def firstShow(self):
         for i in range(len(self.myobjects)):
@@ -91,13 +94,21 @@ class Universe:
     def show(self):
         self.showInfo()
         for i in range(len(self.myobjects) - 1):
-            thisObj = self.myobjects[i]
-            if thisObj.oldx != thisObj.x | thisObj.oldy != thisObj.y :
-                self.ghost[i].move(thisObj.x - thisObj.oldx, thisObj.y - thisObj.oldy)
+            dx = self.myobjects[i].x - self.myobjects[i].oldx
+            dy = self.myobjects[i].y - self.myobjects[i].oldy
+            if dx != 0 | dy != 0 :
+                self.ghost[i].move(dx, dy)
 
     def calculatePhysics(self):
         for i in range(len(self.myobjects)):
-            pass
+            thisObj = self.myobjects[i]
+            V = thisObj.speed
+            alpha = thisObj.speedDirection
+            Vx = V * sin(alpha) 
+            Vy = V * cos(alpha) 
+            thisObj.x += floor(Vx)
+            thisObj.y += floor(Vy)
+
 
     def quit(self):
         self.status = 2
@@ -108,10 +119,6 @@ class Universe:
     def universeLoop(self):
         self.firstShow()
         while True :
-            self.myobjects[0].x += 10
-            self.myobjects[0].y += 10
-
-
             self.interation += 1
             self.calculatePhysics()
             self.show()
@@ -139,8 +146,8 @@ class Universe:
         self.preStart()
         self.status = 1
 
-        self.newObject(300, 300, 20, 15, 'red')
-        self.newObject(400, 200, 50, 10, 'blue')
+        self.newObject(300, 300, 20, 15, 5, 90, 'red')
+        self.newObject(400, 200, 50, 10, 5, 45, 'blue')
 
         self.recordingInformation()
         self.universeLoop()
