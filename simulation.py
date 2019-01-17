@@ -34,6 +34,8 @@ class Universe:
     def createWindow(self, width, height):
         self.width = width
         self.height = height
+        self.infoText = Text(Point(self.width - self.infoWidth / 2, self.infoHeight / 2), self.interation)
+        self.infoText.setFill('white')
         self.window = GraphWin('Simulation of the Universe!', width, height)
 
     def clearWindow(self):
@@ -65,34 +67,46 @@ class Universe:
         cleanInfoList.draw(self.window)
 
     def showInfo(self):
-        self.clearInfoList()
-        info = Text(Point(self.width - self.infoWidth / 2, self.infoHeight / 2), self.interation)
-        info.setFill('white')
-        info.draw(self.window)
+        #self.clearInfoList()
+        #infoText = Text(Point(self.width - self.infoWidth / 2, self.infoHeight / 2), self.interation)
+        #infoText.setFill('white')
+        #infoText.draw(self.window)
+        self.infoText.setText(self.interation)
 
     def show(self):
         self.showInfo()
 
     def universeLoop(self):
-
         while True :
             self.interation += 1
             self.show()
             time.sleep(0.5)
 
+    def preStart(self):
+        self.clearWindow()
+        message = Text(Point(self.window.getWidth()/2, 30), 'Click on anywhere to start simulation')
+        message.setFill('white')
+        message.draw(self.window)
+        self.window.getMouse()
+        self.clearWindow()
+        self.clearInfoList()
+        self.infoText.draw(self.window)
+
     def startSimulation(self):
+        self.preStart()
         self.status = 1
         self.universeLoop()
-
+'''
     def __del__(self):
         if self.status == 1 :
             self.window.close()
+            '''
 
 
 
 def main():
     print('-- Simulation of the Universe! --')
-    unv = Universe(600, 400)
+    unv = Universe(900, 600)
     unv.startSimulation()
 
 
