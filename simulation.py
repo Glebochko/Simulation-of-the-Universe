@@ -91,7 +91,9 @@ class Universe:
     def show(self):
         self.showInfo()
         for i in range(len(self.myobjects) - 1):
-            pass
+            thisObj = self.myobjects[i]
+            if thisObj.oldx != thisObj.x | thisObj.oldy != thisObj.y :
+                self.ghost[i].move(thisObj.x - thisObj.oldx, thisObj.y - thisObj.oldy)
 
     def calculatePhysics(self):
         for i in range(len(self.myobjects)):
@@ -106,6 +108,10 @@ class Universe:
     def universeLoop(self):
         self.firstShow()
         while True :
+            self.myobjects[0].x += 10
+            self.myobjects[0].y += 10
+
+
             self.interation += 1
             self.calculatePhysics()
             self.show()
@@ -150,8 +156,6 @@ def main():
     print('-- Simulation of the Universe! --')
     unv = Universe(900, 600)
     unv.startSimulation()
-
-    #raise SystemExit(1)
 
 
 
