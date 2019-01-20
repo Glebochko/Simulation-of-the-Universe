@@ -2,7 +2,7 @@ from graphics import *
 from random import randint
 from random import randrange
 from time import sleep
-from math import sin, cos, floor
+from math import *
 
 
 
@@ -14,7 +14,7 @@ class SpaceObject:
         self.oldy = y
         self.mass = mass
         self.radius = radius
-        self.speedDirection = speedDirection
+        self.speedDirection = speedDirection + 90
         self.speed = speed
 
         if len(args) == 0 :
@@ -24,18 +24,20 @@ class SpaceObject:
 
 
 
-
 class Universe:
     def __init__(self, *args):
         self.status = 0 # 0 - expectations; 1 - work; 2 - quit
         self.infoWidth = 30
         self.infoHeight = 16
+        self.trackPointsDistance = 5
         self.interation = 0
         self.myobjects = []
         self.ghost = []
         self.bgcolor = 'black'
         if len(args) == 2 :
             self.createWindow(args[0], args[1])
+        elif len(args) == 0 :
+            self.createWindow(1000, 700)
 
 
     def createWindow(self, width, height):
@@ -84,6 +86,7 @@ class Universe:
             self.myobjects.append(SpaceObject(x, y, mass, radius, speed, speedDirection, args[0]))
 
     def firstShow(self):
+        self.missingTrackPoints = self.trackPointsDistance - 1
         for i in range(len(self.myobjects)):
             thisObj = self.myobjects[i]
             self.ghost.append(Circle(Point(thisObj.x, thisObj.y), thisObj.radius))
@@ -93,21 +96,33 @@ class Universe:
 
     def show(self):
         self.showInfo()
-        for i in range(len(self.myobjects) - 1):
-            dx = self.myobjects[i].x - self.myobjects[i].oldx
-            dy = self.myobjects[i].y - self.myobjects[i].oldy
-            if dx != 0 | dy != 0 :
+        self.missingTrackPoints += 1
+        for i in range(len(self.myobjects)):
+            thisObj = self.myobjects[i]
+            dx = thisObj.x - thisObj.oldx
+            dy = thisObj.y - thisObj.oldy
+            thisObj.oldx = thisObj.x
+            thisObj.oldy = thisObj.y
+            if (dx != 0) | (dy != 0) :
                 self.ghost[i].move(dx, dy)
+                if self.missingTrackPoints >= self.trackPointsDistance :
+                    track = Point(thisObj.x, thisObj.y)
+                    track.setFill(thisObj.color)
+                    track.draw(self.window)
+                
+        if self.missingTrackPoints >= self.trackPointsDistance :
+            self.missingTrackPoints = 0
 
     def calculatePhysics(self):
         for i in range(len(self.myobjects)):
             thisObj = self.myobjects[i]
             V = thisObj.speed
+            thisObj.speedDirection %= 360
             alpha = thisObj.speedDirection
-            Vx = V * sin(alpha) 
-            Vy = V * cos(alpha) 
-            thisObj.x += floor(Vx)
-            thisObj.y += floor(Vy)
+            Vx = V * sin(radians(alpha)) 
+            Vy = V * cos(radians(alpha)) 
+            thisObj.x += Vx #floor(Vx)
+            thisObj.y += Vy #floor(Vy)
 
 
     def quit(self):
@@ -117,14 +132,14 @@ class Universe:
         raise SystemExit(0)
 
     def universeLoop(self):
-        self.firstShow()
         while True :
             self.interation += 1
             self.calculatePhysics()
+            
             self.show()
-            time.sleep(0.5)
+            #time.sleep(0.1)
 
-            if self.interation == 5:
+            if self.interation == 200:
                 self.quit()
 
     def recordingInformation(self):
@@ -144,12 +159,13 @@ class Universe:
 
     def startSimulation(self):
         self.preStart()
-        self.status = 1
 
-        self.newObject(300, 300, 20, 15, 5, 90, 'red')
-        self.newObject(400, 200, 50, 10, 5, 45, 'blue')
+        self.newObject(20, 20, 20, 15, 3, -45, 'red')
+        self.newObject(20, 200, 50, 10, 1, 0, 'blue')
 
         self.recordingInformation()
+        self.status = 1
+        self.firstShow()
         self.universeLoop()
 
     def __del__(self):
@@ -161,7 +177,8 @@ class Universe:
 
 def main():
     print('-- Simulation of the Universe! --')
-    unv = Universe(900, 600)
+    print('-- Swipe right! --')
+    unv = Universe(1100, 750)
     unv.startSimulation()
 
 
