@@ -89,14 +89,40 @@ class Universe:
     def firstShowDistance(self):
         for i in range(self.objCount):
             for j in range(i + 1, self.objCount):
-                #self.distanceLabel[i][j].setText(self.distance[i][j])
+
                 self.distanceLabel[i][j].setTextColor('green')
                 self.distanceLabel[i][j].draw(self.window)
 
-    def showDistance(self):
+    def showDistance(self, firstFlag):
         for i in range(self.objCount):
             for j in range(i + 1, self.objCount):
                 self.distanceLabel[i][j].setText(self.distance[i][j])
+                anchor = self.distanceLabel[i][j].anchor
+                oldx = anchor.x
+                oldy = anchor.y
+                objA = self.myobjects[i]
+                objB = self.myobjects[j]
+                xDistance = abs(objA.x - objB.x)
+                yDistance = abs(objA.y - objB.y)
+
+                if objA.x >= objB.x :
+                    newx = objA.x - xDistance / 2
+                else :
+                    newx = objA.x + xDistance / 2
+
+                if objA.y >= objB.y :
+                    newy = objA.y - yDistance / 2
+                else :
+                    newy = objA.y + yDistance / 2
+
+                dx = newx - oldx
+                dy = newy - oldy
+                if not firstFlag :
+                    self.distanceLabel[i][j].move(dx, dy)
+                else :
+                    self.distanceLabel[i][j].draw(self.window)
+                    self.distanceLabel[i][j].setTextColor('green')
+                    self.distanceLabel[i][j].move(dx, dy)
 
     def firstShow(self):
         self.missingTrackPoints = self.trackPointsDistance - 1
@@ -106,7 +132,7 @@ class Universe:
             self.ghost[i].setFill(thisObj.color)
             self.ghost[i].setOutline('green')
             self.ghost[i].draw(self.window)
-        self.firstShowDistance()
+        self.showDistance(True)
 
     def show(self):
         self.showInfo()
@@ -126,7 +152,7 @@ class Universe:
         
         if self.missingTrackPoints >= self.trackPointsDistance :
             self.missingTrackPoints = 0
-        self.showDistance()   
+        self.showDistance(False)   
 
     def getDistance(self, *args):
         if len(args) == 2 :
@@ -136,7 +162,6 @@ class Universe:
             yDistance = abs(objA.y - objB.y)
             ABDistance = sqrt(pow(xDistance, 2) + pow(yDistance, 2))
             ABDistance = floor(ABDistance)
-            print(ABDistance)
             return ABDistance
 
         elif len(args) == 0 :
@@ -203,8 +228,9 @@ class Universe:
     def startSimulation(self):
         self.preStart()
 
-        self.newObject(20, 20, 20, 15, 1, 0, 'red')
-        self.newObject(20, 200, 50, 10, 1, 0, 'blue')
+        self.newObject(20, 20, 20, 15, 9, -45, 'red')
+        #self.newObject(20, 400, 35, 12, 1.8, 27, 'yellow')
+        self.newObject(20, 200, 50, 10, 7, 0, 'blue')
 
         self.recordingInformation()
         self.status = 1
