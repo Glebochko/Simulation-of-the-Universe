@@ -86,13 +86,6 @@ class Universe:
         elif len(args) == 1 :
             self.myobjects.append(SpaceObject(x, y, mass, radius, speed, speedDirection, args[0]))
 
-    def firstShowDistance(self):
-        for i in range(self.objCount):
-            for j in range(i + 1, self.objCount):
-
-                self.distanceLabel[i][j].setTextColor('green')
-                self.distanceLabel[i][j].draw(self.window)
-
     def showDistance(self, firstFlag):
         for i in range(self.objCount):
             for j in range(i + 1, self.objCount):
@@ -117,10 +110,12 @@ class Universe:
 
                 dx = newx - oldx
                 dy = newy - oldy
+
                 if not firstFlag :
                     self.distanceLabel[i][j].move(dx, dy)
                 else :
                     self.distanceLabel[i][j].draw(self.window)
+                    #print(i + 1, ' ', j + 1)
                     self.distanceLabel[i][j].setTextColor('green')
                     self.distanceLabel[i][j].move(dx, dy)
 
@@ -212,8 +207,13 @@ class Universe:
     def recordingInformation(self):
         self.objCount = len(self.myobjects)
         self.distance = [[0] * self.objCount for i in range(self.objCount)]
-        self.distanceLabel = [[Text(Point(10, 10), '0')] * self.objCount for i in range(self.objCount)]
         self.force = [[0] * self.objCount for i in range(self.objCount)]
+        #self.distanceLabel = [[Text(Point(10, 10), 'ERROR')] * self.objCount for i in range(self.objCount)]
+        self.distanceLabel = []
+        for i in range(self.objCount):
+            self.distanceLabel.append([])
+            for j in range(self.objCount):
+                self.distanceLabel[i].append(Text(Point(10, 10), 'ERROR'))
 
     def preStart(self):
         self.clearWindow()
@@ -229,8 +229,8 @@ class Universe:
         self.preStart()
 
         self.newObject(20, 20, 20, 15, 9, -45, 'red')
-        #self.newObject(20, 400, 35, 12, 1.8, 27, 'yellow')
-        self.newObject(20, 200, 50, 10, 7, 0, 'blue')
+        self.newObject(20, 400, 35, 12, 1.8, 27, 'yellow')
+        self.newObject(30, 200, 50, 10, 7, 0, 'blue')
 
         self.recordingInformation()
         self.status = 1
