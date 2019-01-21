@@ -28,6 +28,7 @@ class Universe:
     def __init__(self, *args):
         self.status = 0 # 0 - expectations; 1 - work; 2 - quit
         self.infoWidth = 30
+        self.objCount = 0
         self.infoHeight = 16
         self.trackPointsDistance = 5
         self.interation = 0
@@ -85,6 +86,18 @@ class Universe:
         elif len(args) == 1 :
             self.myobjects.append(SpaceObject(x, y, mass, radius, speed, speedDirection, args[0]))
 
+    def firstShowDistance(self):
+        for i in range(self.objCount):
+            for j in range(i + 1, self.objCount):
+                #self.distanceLabel[i][j].setText(self.distance[i][j])
+                self.distanceLabel[i][j].setTextColor('green')
+                self.distanceLabel[i][j].draw(self.window)
+
+    def showDistance(self):
+        for i in range(self.objCount):
+            for j in range(i + 1, self.objCount):
+                self.distanceLabel[i][j].setText(self.distance[i][j])
+
     def firstShow(self):
         self.missingTrackPoints = self.trackPointsDistance - 1
         for i in range(len(self.myobjects)):
@@ -93,6 +106,7 @@ class Universe:
             self.ghost[i].setFill(thisObj.color)
             self.ghost[i].setOutline('green')
             self.ghost[i].draw(self.window)
+        self.firstShowDistance()
 
     def show(self):
         self.showInfo()
@@ -109,9 +123,31 @@ class Universe:
                     track = Point(thisObj.x, thisObj.y)
                     track.setFill(thisObj.color)
                     track.draw(self.window)
-                
+        
         if self.missingTrackPoints >= self.trackPointsDistance :
             self.missingTrackPoints = 0
+        self.showDistance()   
+
+    def getDistance(self, *args):
+        if len(args) == 2 :
+            objA = self.myobjects[args[0]]
+            objB = self.myobjects[args[1]]
+            xDistance = abs(objA.x - objB.x)
+            yDistance = abs(objA.y - objB.y)
+            ABDistance = sqrt(pow(xDistance, 2) + pow(yDistance, 2))
+            ABDistance = floor(ABDistance)
+            print(ABDistance)
+            return ABDistance
+
+        elif len(args) == 0 :
+            for i in range(self.objCount):
+                for j in range(i + 1, self.objCount):
+                    self.distance[i][j] = self.getDistance(i, j) # number = (i + 1) * 10 + j + 1
+                    self.distance[j][i] = self.distance[i][j]
+                self.distance[i][i] = 0
+
+    def getForce(self):
+        pass
 
     def calculatePhysics(self):
         for i in range(len(self.myobjects)):
@@ -121,8 +157,14 @@ class Universe:
             alpha = thisObj.speedDirection
             Vx = V * sin(radians(alpha)) 
             Vy = V * cos(radians(alpha)) 
+
+            self.getDistance()
+            self.getForce()
+
+
+
             thisObj.x += Vx #floor(Vx)
-            thisObj.y += Vy #floor(Vy)
+            thisObj.y += Vy # floor(Vy)
 
 
     def quit(self):
@@ -135,7 +177,7 @@ class Universe:
         while True :
             self.interation += 1
             self.calculatePhysics()
-            
+
             self.show()
             #time.sleep(0.1)
 
@@ -143,9 +185,10 @@ class Universe:
                 self.quit()
 
     def recordingInformation(self):
-        objCount = len(self.myobjects)
-        self.distance = [[0] * objCount for i in range(objCount)]
-        self.influence = [[0] * objCount for i in range(objCount)]
+        self.objCount = len(self.myobjects)
+        self.distance = [[0] * self.objCount for i in range(self.objCount)]
+        self.distanceLabel = [[Text(Point(10, 10), '0')] * self.objCount for i in range(self.objCount)]
+        self.force = [[0] * self.objCount for i in range(self.objCount)]
 
     def preStart(self):
         self.clearWindow()
@@ -160,7 +203,7 @@ class Universe:
     def startSimulation(self):
         self.preStart()
 
-        self.newObject(20, 20, 20, 15, 3, -45, 'red')
+        self.newObject(20, 20, 20, 15, 1, 0, 'red')
         self.newObject(20, 200, 50, 10, 1, 0, 'blue')
 
         self.recordingInformation()
