@@ -3,11 +3,12 @@ from random import randint
 from random import randrange
 from time import sleep
 from math import *
-
+import pdb
 
 
 class SpaceObject:
     def __init__(self, x, y, mass, radius, speed, speedDirection, *args):
+        self.static = False
         self.x = x
         self.y = y
         self.oldx = x
@@ -21,6 +22,11 @@ class SpaceObject:
             self.color = color_rgb(randrange(256), randrange(256), randrange(256))
         elif len(args) == 1 :
             self.color = args[0]
+
+
+    def getResultantForce(self, objects):
+        for i in range(len(objects)):
+            pass
 
 
 
@@ -48,6 +54,7 @@ class Universe:
         self.infoText.setFill('white')
         self.window = GraphWin('Simulation of the Universe!', width, height)
 
+
     def clearWindow(self):
         p1 = Point(0, 0)
         p2 = Point(self.width, 0)
@@ -61,6 +68,7 @@ class Universe:
         cleanWindow.setFill(self.bgcolor)
 
         cleanWindow.draw(self.window)
+
 
     def clearInfoList(self):
         p1 = Point(self.width - self.infoWidth - 1, 0)
@@ -76,9 +84,11 @@ class Universe:
 
         cleanInfoList.draw(self.window)
 
+
     def showInfo(self):
         #self.clearInfoList()
         self.infoText.setText(self.interation)
+
 
     def newObject(self, x, y, mass, radius, speed, speedDirection, *args):
         if len(args) == 0 :
@@ -86,10 +96,12 @@ class Universe:
         elif len(args) == 1 :
             self.myobjects.append(SpaceObject(x, y, mass, radius, speed, speedDirection, args[0]))
 
-    def showDistance(self, firstFlag):
+
+    def showObjInteractionInfo(self, firstFlag):
+        #pdb.set_trace() 
         for i in range(self.objCount):
             for j in range(i + 1, self.objCount):
-                self.distanceLabel[i][j].setText(self.distance[i][j])
+                self.distanceLabel[i][j].setText(str(self.distance[i][j]) + '; ' + str(self.force[i][j]))
                 anchor = self.distanceLabel[i][j].anchor
                 oldx = anchor.x
                 oldy = anchor.y
@@ -119,6 +131,7 @@ class Universe:
                     self.distanceLabel[i][j].setTextColor('green')
                     self.distanceLabel[i][j].move(dx, dy)
 
+
     def firstShow(self):
         self.missingTrackPoints = self.trackPointsDistance - 1
         for i in range(len(self.myobjects)):
@@ -127,7 +140,8 @@ class Universe:
             self.ghost[i].setFill(thisObj.color)
             self.ghost[i].setOutline('green')
             self.ghost[i].draw(self.window)
-        self.showDistance(True)
+        self.showObjInteractionInfo(True)
+
 
     def show(self):
         self.showInfo()
@@ -147,7 +161,8 @@ class Universe:
         
         if self.missingTrackPoints >= self.trackPointsDistance :
             self.missingTrackPoints = 0
-        self.showDistance(False)   
+        self.showObjInteractionInfo(False)   
+
 
     def getDistance(self, *args):
         if len(args) == 2 :
@@ -162,12 +177,28 @@ class Universe:
         elif len(args) == 0 :
             for i in range(self.objCount):
                 for j in range(i + 1, self.objCount):
-                    self.distance[i][j] = self.getDistance(i, j) # number = (i + 1) * 10 + j + 1
+                    self.distance[i][j] = self.getDistance(i, j)
                     self.distance[j][i] = self.distance[i][j]
                 self.distance[i][i] = 0
 
-    def getForce(self):
-        pass
+
+    def getForce(self, *args):
+        if len(args) == 2 :
+            objA = self.myobjects[args[0]]
+            objB = self.myobjects[args[1]]
+            G = 1
+            ABforce = G * objA.mass * objB.mass 
+            ABforce /= pow(self.distance[args[0]][args[1]], 2)
+            ABforce = floor(ABforce)
+            return ABforce
+
+        elif len(args) == 0 :
+            for i in range(self.objCount):
+                for j in range(i + 1, self.objCount):
+                    self.force[i][j] = self.getForce(i, j)
+                    self.force[j][i] = self.force[i][j]
+                self.force[i][i] = 0
+
 
     def calculatePhysics(self):
         for i in range(len(self.myobjects)):
@@ -182,9 +213,9 @@ class Universe:
             self.getForce()
 
 
-
-            thisObj.x += Vx #floor(Vx)
-            thisObj.y += Vy # floor(Vy)
+            if not thisObj.static :
+                thisObj.x += Vx #floor(Vx)
+                thisObj.y += Vy #floor(Vy)
 
 
     def quit(self):
@@ -192,6 +223,7 @@ class Universe:
         self.__del__()
         print('-- Exit! --')
         raise SystemExit(0)
+
 
     def universeLoop(self):
         while True :
@@ -204,6 +236,7 @@ class Universe:
             if self.interation == 200:
                 self.quit()
 
+
     def recordingInformation(self):
         self.objCount = len(self.myobjects)
         self.distance = [[0] * self.objCount for i in range(self.objCount)]
@@ -215,6 +248,7 @@ class Universe:
             for j in range(self.objCount):
                 self.distanceLabel[i].append(Text(Point(10, 10), 'ERROR'))
 
+
     def preStart(self):
         self.clearWindow()
         message = Text(Point(self.window.getWidth()/2, 30), 'Click on anywhere to start simulation')
@@ -225,17 +259,19 @@ class Universe:
         self.clearInfoList()
         self.infoText.draw(self.window)
 
+
     def startSimulation(self):
         self.preStart()
 
-        self.newObject(20, 20, 20, 15, 9, -45, 'red')
-        self.newObject(20, 400, 35, 12, 1.8, 27, 'yellow')
-        self.newObject(30, 200, 50, 10, 7, 0, 'blue')
+        self.newObject(20, 20, 200, 15, 9, -45, 'red')
+        self.newObject(20, 400, 1700, 12, 1.8, 27, 'yellow')
+        self.newObject(30, 200, 300, 10, 7, 0, 'blue')
 
         self.recordingInformation()
         self.status = 1
         self.firstShow()
         self.universeLoop()
+
 
     def __del__(self):
         if self.status == 2 :
