@@ -17,6 +17,8 @@ class SpaceObject:
         self.radius = radius
         self.speedDirection = speedDirection + 90
         self.speed = speed
+        self.ResForce = 0
+        self.forceDirection = 0
 
         if len(args) == 0 :
             self.color = color_rgb(randrange(256), randrange(256), randrange(256))
@@ -24,23 +26,22 @@ class SpaceObject:
             self.color = args[0]
 
 
-    def getResultantForce(self, objects):
-        for i in range(len(objects)):
-            pass
-
-
 
 class Universe:
     def __init__(self, *args):
         self.status = 0 # 0 - expectations; 1 - work; 2 - quit
-        self.infoWidth = 30
         self.objCount = 0
+        self.infoWidth = 30
         self.infoHeight = 16
-        self.trackPointsDistance = 5
         self.interation = 0
         self.myobjects = []
         self.ghost = []
         self.bgcolor = 'black'
+
+        self.outputObjectsInteractionInfo = True
+        self.drawingTrackPoints = True
+        self.trackPointsDistance = 4
+
         if len(args) == 2 :
             self.createWindow(args[0], args[1])
         elif len(args) == 0 :
@@ -99,38 +100,45 @@ class Universe:
 
     def showObjInteractionInfo(self, firstFlag):
         #pdb.set_trace() 
-        for i in range(self.objCount):
-            for j in range(i + 1, self.objCount):
-                self.distanceLabel[i][j].setText(str(self.distance[i][j]) + '; ' + str(self.force[i][j]))
-                anchor = self.distanceLabel[i][j].anchor
-                oldx = anchor.x
-                oldy = anchor.y
-                objA = self.myobjects[i]
-                objB = self.myobjects[j]
-                xDistance = abs(objA.x - objB.x)
-                yDistance = abs(objA.y - objB.y)
+        if self.outputObjectsInteractionInfo :
+            for i in range(self.objCount):
+                for j in range(i + 1, self.objCount):
+                    self.distanceLabel[i][j].setText(str(floor(self.distance[i][j])) + '; ' + str(floor(self.force[i][j])))
+                    anchor = self.distanceLabel[i][j].anchor
+                    oldx = anchor.x
+                    oldy = anchor.y
+                    objA = self.myobjects[i]
+                    objB = self.myobjects[j]
+                    xDistance = abs(objA.x - objB.x)
+                    yDistance = abs(objA.y - objB.y)
 
-                if objA.x >= objB.x :
-                    newx = objA.x - xDistance / 2
-                else :
-                    newx = objA.x + xDistance / 2
+                    if objA.x >= objB.x :
+                        newx = objA.x - xDistance / 2
+                    else :
+                        newx = objA.x + xDistance / 2
 
-                if objA.y >= objB.y :
-                    newy = objA.y - yDistance / 2
-                else :
-                    newy = objA.y + yDistance / 2
+                    if objA.y >= objB.y :
+                        newy = objA.y - yDistance / 2
+                    else :
+                        newy = objA.y + yDistance / 2
 
-                dx = newx - oldx
-                dy = newy - oldy
+                    dx = newx - oldx
+                    dy = newy - oldy
 
-                if not firstFlag :
-                    self.distanceLabel[i][j].move(dx, dy)
-                else :
-                    self.distanceLabel[i][j].draw(self.window)
-                    #print(i + 1, ' ', j + 1)
-                    self.distanceLabel[i][j].setTextColor('green')
-                    self.distanceLabel[i][j].move(dx, dy)
+                    if not firstFlag :
+                        self.distanceLabel[i][j].move(dx, dy)
+                    else :
+                        self.distanceLabel[i][j].draw(self.window)
+                        #print(i + 1, ' ', j + 1)
+                        self.distanceLabel[i][j].setTextColor('green')
+                        self.distanceLabel[i][j].move(dx, dy)
 
+    def drawTrackPoints(self, thisObj):
+        if self.drawingTrackPoints :
+            if self.missingTrackPoints >= self.trackPointsDistance :
+                track = Point(thisObj.x, thisObj.y)
+                track.setFill(thisObj.color)
+                track.draw(self.window)
 
     def firstShow(self):
         self.missingTrackPoints = self.trackPointsDistance - 1
@@ -145,7 +153,11 @@ class Universe:
 
     def show(self):
         self.showInfo()
-        self.missingTrackPoints += 1
+        if self.drawingTrackPoints :
+            if self.missingTrackPoints >= self.trackPointsDistance :
+                self.missingTrackPoints = 0
+            self.missingTrackPoints += 1
+
         for i in range(len(self.myobjects)):
             thisObj = self.myobjects[i]
             dx = thisObj.x - thisObj.oldx
@@ -154,14 +166,15 @@ class Universe:
             thisObj.oldy = thisObj.y
             if (dx != 0) | (dy != 0) :
                 self.ghost[i].move(dx, dy)
-                if self.missingTrackPoints >= self.trackPointsDistance :
-                    track = Point(thisObj.x, thisObj.y)
-                    track.setFill(thisObj.color)
-                    track.draw(self.window)
-        
-        if self.missingTrackPoints >= self.trackPointsDistance :
-            self.missingTrackPoints = 0
+                self.drawTrackPoints(thisObj)
+
         self.showObjInteractionInfo(False)   
+
+
+    def getResultantForce(self):
+        for i in range(self.objCount):
+
+            pass
 
 
     def getDistance(self, *args):
@@ -171,7 +184,7 @@ class Universe:
             xDistance = abs(objA.x - objB.x)
             yDistance = abs(objA.y - objB.y)
             ABDistance = sqrt(pow(xDistance, 2) + pow(yDistance, 2))
-            ABDistance = floor(ABDistance)
+            #ABDistance = floor(ABDistance)
             return ABDistance
 
         elif len(args) == 0 :
@@ -189,7 +202,7 @@ class Universe:
             G = 1
             ABforce = G * objA.mass * objB.mass 
             ABforce /= pow(self.distance[args[0]][args[1]], 2)
-            ABforce = floor(ABforce)
+            #ABforce = floor(ABforce)
             return ABforce
 
         elif len(args) == 0 :
@@ -264,7 +277,7 @@ class Universe:
         self.preStart()
 
         self.newObject(20, 20, 200, 15, 9, -45, 'red')
-        self.newObject(20, 400, 1700, 12, 1.8, 27, 'yellow')
+        #self.newObject(20, 400, 1700, 12, 1.8, 27, 'yellow')
         self.newObject(30, 200, 300, 10, 7, 0, 'blue')
 
         self.recordingInformation()
@@ -279,10 +292,10 @@ class Universe:
             
 
 
-
 def main():
     print('-- Simulation of the Universe! --')
     print('-- Swipe right! --')
+
     unv = Universe(1100, 750)
     unv.startSimulation()
 
