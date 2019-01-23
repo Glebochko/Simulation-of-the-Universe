@@ -1,4 +1,4 @@
-def main():
+def main1():
     objCount = 4
     distance = [[0] * objCount for i in range(objCount)]
     for i in range(objCount):
@@ -12,7 +12,11 @@ def main():
         for j in range(objCount):
             print(distance[i][j])
 
+def main2():
+
+    for i in range(1, 10):
+        print(i)
 
 
-main()
+main2()
                 

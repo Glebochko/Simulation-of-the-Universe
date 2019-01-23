@@ -17,7 +17,7 @@ class SpaceObject:
         self.radius = radius
         self.speedDirection = speedDirection + 90
         self.speed = speed
-        self.ResForce = 0
+        self.resForce = 0
         self.forceDirection = 0
 
         if len(args) == 0 :
@@ -40,7 +40,7 @@ class Universe:
 
         self.outputObjectsInteractionInfo = True
         self.drawingTrackPoints = True
-        self.trackPointsDistance = 4
+        self.trackPointsDistance = 2
 
         if len(args) == 2 :
             self.createWindow(args[0], args[1])
@@ -133,12 +133,18 @@ class Universe:
                         self.distanceLabel[i][j].setTextColor('green')
                         self.distanceLabel[i][j].move(dx, dy)
 
+
     def drawTrackPoints(self, thisObj):
         if self.drawingTrackPoints :
             if self.missingTrackPoints >= self.trackPointsDistance :
                 track = Point(thisObj.x, thisObj.y)
                 track.setFill(thisObj.color)
                 track.draw(self.window)
+
+
+    def drawForceDirection(obj):
+        pass
+
 
     def firstShow(self):
         self.missingTrackPoints = self.trackPointsDistance - 1
@@ -173,8 +179,61 @@ class Universe:
 
     def getResultantForce(self):
         for i in range(self.objCount):
+            thisObj = self.myobjects[i]
 
-            pass
+            for j in range (self.objCount):
+                if i != j :
+                    targetObj = self.myobjects[j]
+                    rx = thisObj.x - targetObj.x
+                    ry = thisObj.y - targetObj.y
+                    beta = atan(radians(floor(rx / ry)))
+                    alpha = 0
+
+                    if (rx < 0) & (ry > 0):
+                        alpha = 90 - beta
+                    elif (rx < 0) & (ry < 0) :
+                        alpha = 270 + beta
+                    elif (rx > 0) & (ry > 0) :
+                        alpha = 180 - beta
+                    elif (rx > 0) & (ry < 0) :
+                        alpha = 270 - beta
+
+                    alpha += 90
+                    fx = self.force[i][j] * cos(radians(alpha))
+                    fy = self.force[i][j] * sin(radians(alpha))
+
+                    resf = thisObj.resForce
+                    resAlpha = thisObj.forceDirection
+                    resfx = resAlpha * cos(radians(resAlpha))
+                    resfy = resAlpha * sin(radians(resAlpha))
+
+                    resfx += fx
+                    resfy += fy
+                    
+                    if resfy != 0 :
+                        beta = atan(radians(floor(resfx / resfy)))
+                        resAlpha = 0
+
+                        if (resfx < 0) & (resfy > 0):
+                            resAlpha = 90 - beta
+                        elif (resfx < 0) & (resfy < 0) :
+                            resAlpha = 270 + beta
+                        elif (resfx > 0) & (resfy > 0) :
+                            resAlpha = 180 - beta
+                        elif (resfx > 0) & (resfy < 0) :
+                            resAlpha = 270 - beta
+                    else :
+                        resAlpha = 0
+
+                    resAlpha += 90
+                    thisObj.forceDirection = resAlpha
+                    thisObj.resForce = sqrt(pow(resfx, 2) + pow(resfy, 2))
+
+
+
+                    #forceLine = Line(Point(thisObj.x, thisObj.y), Point())
+                    #self.drawForceDirection(thisObj)
+
 
 
     def getDistance(self, *args):
@@ -216,6 +275,7 @@ class Universe:
     def calculatePhysics(self):
         for i in range(len(self.myobjects)):
             thisObj = self.myobjects[i]
+
             V = thisObj.speed
             thisObj.speedDirection %= 360
             alpha = thisObj.speedDirection
@@ -224,6 +284,12 @@ class Universe:
 
             self.getDistance()
             self.getForce()
+            self.getResultantForce()
+
+            a = thisObj.resForce / thisObj.mass
+            alpha = thisObj.forceDirection
+            #python soset chlen i kto na nem pishet tot loh
+
 
 
             if not thisObj.static :
