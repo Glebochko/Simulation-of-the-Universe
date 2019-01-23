@@ -103,7 +103,7 @@ class Universe:
         if self.outputObjectsInteractionInfo :
             for i in range(self.objCount):
                 for j in range(i + 1, self.objCount):
-                    self.distanceLabel[i][j].setText(str(floor(self.distance[i][j])) + '; ' + str(floor(self.force[i][j])))
+                    self.distanceLabel[i][j].setText(str(floor(self.distance[i][j][0])) + '; ' + str(floor(self.force[i][j][0])))
                     anchor = self.distanceLabel[i][j].anchor
                     oldx = anchor.x
                     oldy = anchor.y
@@ -140,10 +140,6 @@ class Universe:
                 track = Point(thisObj.x, thisObj.y)
                 track.setFill(thisObj.color)
                 track.draw(self.window)
-
-
-    def drawForceDirection(obj):
-        pass
 
 
     def firstShow(self):
@@ -183,6 +179,7 @@ class Universe:
 
             for j in range (self.objCount):
                 if i != j :
+                    #pdb.set_trace()
                     targetObj = self.myobjects[j]
                     rx = thisObj.x - targetObj.x
                     ry = thisObj.y - targetObj.y
@@ -198,12 +195,12 @@ class Universe:
                     elif (rx > 0) & (ry < 0) :
                         alpha = 270 - beta
 
-                    alpha += 90
+                    #alpha += 90
                     fx = self.force[i][j] * cos(radians(alpha))
                     fy = self.force[i][j] * sin(radians(alpha))
 
                     resf = thisObj.resForce
-                    resAlpha = thisObj.forceDirection
+                    resAlpha = thisObj.forceDirection - 90
                     resfx = resAlpha * cos(radians(resAlpha))
                     resfy = resAlpha * sin(radians(resAlpha))
 
@@ -230,10 +227,8 @@ class Universe:
                     thisObj.resForce = sqrt(pow(resfx, 2) + pow(resfy, 2))
 
 
-
                     #forceLine = Line(Point(thisObj.x, thisObj.y), Point())
                     #self.drawForceDirection(thisObj)
-
 
 
     def getDistance(self, *args):
@@ -244,14 +239,14 @@ class Universe:
             yDistance = abs(objA.y - objB.y)
             ABDistance = sqrt(pow(xDistance, 2) + pow(yDistance, 2))
             #ABDistance = floor(ABDistance)
-            return ABDistance
+            return [ABDistance, xDistance, yDistance]
 
         elif len(args) == 0 :
             for i in range(self.objCount):
                 for j in range(i + 1, self.objCount):
                     self.distance[i][j] = self.getDistance(i, j)
                     self.distance[j][i] = self.distance[i][j]
-                self.distance[i][i] = 0
+                self.distance[i][i] = [0, 0, 0]
 
 
     def getForce(self, *args):
@@ -260,16 +255,21 @@ class Universe:
             objB = self.myobjects[args[1]]
             G = 1
             ABforce = G * objA.mass * objB.mass 
-            ABforce /= pow(self.distance[args[0]][args[1]], 2)
+            ABforce /= pow(self.distance[args[0]][args[1]][0], 2)
+
+            tgb = self.distance[args[0]][args[1]][1] / self.distance[args[0]][args[1]][2]
+            yForce = ABforce / sqrt(pow(tgb, 2) + 1)
+            xForce = tgb * yForce
+
             #ABforce = floor(ABforce)
-            return ABforce
+            return [ABforce, xForce, yForce]
 
         elif len(args) == 0 :
             for i in range(self.objCount):
                 for j in range(i + 1, self.objCount):
                     self.force[i][j] = self.getForce(i, j)
                     self.force[j][i] = self.force[i][j]
-                self.force[i][i] = 0
+                self.force[i][i] = [0, 0, 0]
 
 
     def calculatePhysics(self):
@@ -284,17 +284,23 @@ class Universe:
 
             self.getDistance()
             self.getForce()
+            '''
             self.getResultantForce()
 
-            a = thisObj.resForce / thisObj.mass
+            a = 10 * thisObj.resForce / thisObj.mass
             alpha = thisObj.forceDirection
-            #python soset chlen i kto na nem pishet tot loh
+            thisObj.forceDirection %= 360
+            ax = a * cos(radians(alpha))
+            ay = a * sin(radians(alpha))
 
-
-
+            Vx += ax
+            Vy += ay
+            '''
             if not thisObj.static :
                 thisObj.x += Vx #floor(Vx)
                 thisObj.y += Vy #floor(Vy)
+
+            thisObj.speed = sqrt(pow(Vx, 2) + pow(Vy, 2))
 
 
     def quit(self):
@@ -318,14 +324,24 @@ class Universe:
 
     def recordingInformation(self):
         self.objCount = len(self.myobjects)
-        self.distance = [[0] * self.objCount for i in range(self.objCount)]
-        self.force = [[0] * self.objCount for i in range(self.objCount)]
+        #self.distance = [[0] * self.objCount for i in range(self.objCount)]
+        #self.force = [[0] * self.objCount for i in range(self.objCount)]
         #self.distanceLabel = [[Text(Point(10, 10), 'ERROR')] * self.objCount for i in range(self.objCount)]
+        
         self.distanceLabel = []
+        self.force = []
+        self.distance = []
         for i in range(self.objCount):
             self.distanceLabel.append([])
+            self.force.append([])
+            self.distance.append([])
             for j in range(self.objCount):
                 self.distanceLabel[i].append(Text(Point(10, 10), 'ERROR'))
+                self.force[i].append([])
+                self.distance[i].append([])
+                for g in range(3):
+                    self.force[i][j].append(0)
+                    self.distance[i][j].append(0)
 
 
     def preStart(self):
@@ -342,9 +358,10 @@ class Universe:
     def startSimulation(self):
         self.preStart()
 
-        self.newObject(20, 20, 200, 15, 9, -45, 'red')
-        #self.newObject(20, 400, 1700, 12, 1.8, 27, 'yellow')
-        self.newObject(30, 200, 300, 10, 7, 0, 'blue')
+        self.newObject(400, 300, 1000, 10, 3, 0, 'red')
+        self.newObject(400, 400, 1700, 12, 0, 0, 'yellow')
+        self.myobjects[1].static = True
+        #self.newObject(30, 200, 2000, 10, 0, 0, 'blue')
 
         self.recordingInformation()
         self.status = 1
