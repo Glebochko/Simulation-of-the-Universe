@@ -15,8 +15,13 @@ class SpaceObject:
         self.oldy = y
         self.mass = mass
         self.radius = radius
-        self.speedDirection = speedDirection + 90
+
+        self.speedDirection = (speedDirection + 90) % 360
         self.speed = speed
+        alpha = self.speedDirection
+        self.Vx = speed * sin(radians(alpha)) 
+        self.Vy = speed * cos(radians(alpha)) 
+
         self.resForce = []
         for i in range(3):
             self.resForce.append(0)
@@ -235,16 +240,22 @@ class Universe:
 
     def getResultantForce(self):
         for i in range(self.objCount):
+            self.myobjects[i].resForce[1] = 0
+            self.myobjects[i].resForce[2] = 0
+
             for j in range(self.objCount):
                 if i != j :
                     fx = self.force[i][j][1]
                     fy = self.force[i][j][2]
                     self.myobjects[i].resForce[1] += fx
                     self.myobjects[i].resForce[2] += fy
-                    rfx = self.myobjects[i].resForce[1]
-                    rfy = self.myobjects[i].resForce[2]
-                    rf = sqrt(pow(abs(rfx), 2) + pow(abs(rfy), 2))
-                    self.myobjects[i].resForce[0] = rf
+
+            rfx = self.myobjects[i].resForce[1]
+            rfy = self.myobjects[i].resForce[2]
+            
+            rf = sqrt(pow(abs(rfx), 2) + pow(abs(rfy), 2))
+            self.myobjects[i].resForce[0] = rf
+            x = 10
                     
                     
 
@@ -271,7 +282,7 @@ class Universe:
         if len(args) == 2 :
             objA = self.myobjects[args[0]]
             objB = self.myobjects[args[1]]
-            G = 1
+            G = 0.3
             ABforce = G * objA.mass * objB.mass 
             ABforce /= pow(self.distance[args[0]][args[1]][0], 2)
 
@@ -293,31 +304,24 @@ class Universe:
     def calculatePhysics(self):
         for i in range(len(self.myobjects)):
             thisObj = self.myobjects[i]
-
-            V = thisObj.speed
-            thisObj.speedDirection %= 360
-            alpha = thisObj.speedDirection
-            Vx = V * sin(radians(alpha)) 
-            Vy = V * cos(radians(alpha)) 
-
-            self.getDistance()
-            self.getForce()
-            self.getResultantForce()
-            '''
-            a = 10 * thisObj.resForce / thisObj.mass
-            alpha = thisObj.forceDirection
-            thisObj.forceDirection %= 360
-            ax = a * cos(radians(alpha))
-            ay = a * sin(radians(alpha))
-
-            Vx += ax
-            Vy += ay
-            '''
             if not thisObj.static :
-                thisObj.x += Vx #floor(Vx)
-                thisObj.y += Vy #floor(Vy)
+                Vx = thisObj.Vx
+                Vy = thisObj.Vy
 
-            thisObj.speed = sqrt(pow(Vx, 2) + pow(Vy, 2))
+                self.getDistance()
+                self.getForce()
+                self.getResultantForce()
+
+                ax = thisObj.resForce[1] / thisObj.mass
+                ay = thisObj.resForce[2] / thisObj.mass
+                Vx += ax
+                Vy += ay
+
+                thisObj.x += Vx
+                thisObj.y += Vy
+                thisObj.Vx = Vx
+                thisObj.Vy = Vy
+                thisObj.speed = sqrt(pow(Vx, 2) + pow(Vy, 2))
 
 
     def quit(self):
@@ -375,7 +379,7 @@ class Universe:
     def startSimulation(self):
         self.preStart()
 
-        self.newObject(400, 300, 1000, 10, 3, 0, 'red')
+        self.newObject(400, 350, 1000, 10, -3, 0, 'red')
         self.newObject(400, 400, 1700, 12, 0, 0, 'yellow')
         self.myobjects[1].static = True
         #self.newObject(30, 200, 2000, 10, 0, 0, 'blue')
