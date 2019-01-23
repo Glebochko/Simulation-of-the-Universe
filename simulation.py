@@ -17,7 +17,9 @@ class SpaceObject:
         self.radius = radius
         self.speedDirection = speedDirection + 90
         self.speed = speed
-        self.resForce = 0
+        self.resForce = []
+        for i in range(3):
+            self.resForce.append(0)
         self.forceDirection = 0
 
         if len(args) == 0 :
@@ -173,7 +175,7 @@ class Universe:
         self.showObjInteractionInfo(False)   
 
 
-    def getResultantForce(self):
+    def getResultantForceOld(self):
         for i in range(self.objCount):
             thisObj = self.myobjects[i]
 
@@ -231,6 +233,22 @@ class Universe:
                     #self.drawForceDirection(thisObj)
 
 
+    def getResultantForce(self):
+        for i in range(self.objCount):
+            for j in range(self.objCount):
+                if i != j :
+                    fx = self.force[i][j][1]
+                    fy = self.force[i][j][2]
+                    self.myobjects[i].resForce[1] += fx
+                    self.myobjects[i].resForce[2] += fy
+                    rfx = self.myobjects[i].resForce[1]
+                    rfy = self.myobjects[i].resForce[2]
+                    rf = sqrt(pow(abs(rfx), 2) + pow(abs(rfy), 2))
+                    self.myobjects[i].resForce[0] = rf
+                    
+                    
+
+
     def getDistance(self, *args):
         if len(args) == 2 :
             objA = self.myobjects[args[0]]
@@ -284,9 +302,8 @@ class Universe:
 
             self.getDistance()
             self.getForce()
-            '''
             self.getResultantForce()
-
+            '''
             a = 10 * thisObj.resForce / thisObj.mass
             alpha = thisObj.forceDirection
             thisObj.forceDirection %= 360
