@@ -240,34 +240,33 @@ class Universe:
 
     def getResultantForce(self):
         for i in range(self.objCount):
-            self.myobjects[i].resForce[1] = 0
-            self.myobjects[i].resForce[2] = 0
+            if not self.myobjects[i].static :
+                self.myobjects[i].resForce[1] = 0
+                self.myobjects[i].resForce[2] = 0
 
-            for j in range(self.objCount):
-                if i != j :
-                    fx = self.force[i][j][1]
-                    fy = self.force[i][j][2]
-                    self.myobjects[i].resForce[1] += fx
-                    self.myobjects[i].resForce[2] += fy
+                for j in range(self.objCount):
+                    if i != j :
+                        fx = self.force[i][j][1]
+                        fy = self.force[i][j][2]
+                        self.myobjects[i].resForce[1] += fx
+                        self.myobjects[i].resForce[2] += fy
 
-            rfx = self.myobjects[i].resForce[1]
-            rfy = self.myobjects[i].resForce[2]
-            
-            rf = sqrt(pow(abs(rfx), 2) + pow(abs(rfy), 2))
-            self.myobjects[i].resForce[0] = rf
-            x = 10
-                    
-                    
+                rfx = self.myobjects[i].resForce[1]
+                rfy = self.myobjects[i].resForce[2]
+
+                rf = sqrt(pow(abs(rfx), 2) + pow(abs(rfy), 2))
+                self.myobjects[i].resForce[0] = rf
+                x = 10                 
 
 
     def getDistance(self, *args):
         if len(args) == 2 :
             objA = self.myobjects[args[0]]
             objB = self.myobjects[args[1]]
-            xDistance = abs(objA.x - objB.x)
-            yDistance = abs(objA.y - objB.y)
+            xDistance = (objB.x - objA.x)
+            yDistance = (objB.y - objA.y)
             ABDistance = sqrt(pow(xDistance, 2) + pow(yDistance, 2))
-            #ABDistance = floor(ABDistance)
+            
             return [ABDistance, xDistance, yDistance]
 
         elif len(args) == 0 :
@@ -286,11 +285,17 @@ class Universe:
             ABforce = G * objA.mass * objB.mass 
             ABforce /= pow(self.distance[args[0]][args[1]][0], 2)
 
-            tgb = self.distance[args[0]][args[1]][1] / self.distance[args[0]][args[1]][2]
+            rx = self.distance[args[0]][args[1]][1]
+            ry = self.distance[args[0]][args[1]][2]
+            tgb = rx / ry
             yForce = ABforce / sqrt(pow(tgb, 2) + 1)
             xForce = tgb * yForce
 
-            #ABforce = floor(ABforce)
+            if ry < 0 :
+                xForce *= -1
+            if rx < 0 :
+                yForce *= -1
+
             return [ABforce, xForce, yForce]
 
         elif len(args) == 0 :
