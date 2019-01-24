@@ -288,13 +288,13 @@ class Universe:
             rx = self.distance[args[0]][args[1]][1]
             ry = self.distance[args[0]][args[1]][2]
             tgb = rx / ry
-            yForce = ABforce / sqrt(pow(tgb, 2) + 1)
-            xForce = tgb * yForce
-
+            yForce = abs(ABforce / sqrt(pow(tgb, 2) + 1))
+            xForce = abs(tgb * yForce)
+            
             if ry < 0 :
-                xForce *= -1
-            if rx < 0 :
                 yForce *= -1
+            if rx < 0 :
+                xForce *= -1
 
             return [ABforce, xForce, yForce]
 
