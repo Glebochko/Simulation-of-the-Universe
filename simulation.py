@@ -271,9 +271,10 @@ class Universe:
 
         elif len(args) == 0 :
             for i in range(self.objCount):
-                for j in range(i + 1, self.objCount):
-                    self.distance[i][j] = self.getDistance(i, j)
-                    self.distance[j][i] = self.distance[i][j]
+                for j in range(self.objCount):
+                    if i != j :  
+                        self.distance[i][j] = self.getDistance(i, j)
+                        #self.distance[j][i] = self.distance[i][j]
                 self.distance[i][i] = [0, 0, 0]
 
 
@@ -300,9 +301,10 @@ class Universe:
 
         elif len(args) == 0 :
             for i in range(self.objCount):
-                for j in range(i + 1, self.objCount):
-                    self.force[i][j] = self.getForce(i, j)
-                    self.force[j][i] = self.force[i][j]
+                for j in range(self.objCount):
+                    if i != j :  
+                        self.force[i][j] = self.getForce(i, j)
+                        #self.force[j][i] = self.force[i][j]
                 self.force[i][i] = [0, 0, 0]
 
 
@@ -387,9 +389,12 @@ class Universe:
             self.myobjects[1].static = True
 
         elif configNumber == 2 :
-            self.newObject(40, 50, 1000, 10, -3, 0, 'red')
-            self.newObject(40, 400, 1700, 12, 0, 0, 'yellow')
-            self.newObject(30, 250, 2000, 10, 5, 0, 'blue')
+            #self.newObject(400, 350, 1000, 10, -5, 0, 'red')
+            
+            self.newObject(400, 400, 3000, 15, 0, 0, 'yellow')
+            self.myobjects[0].static = True
+            self.newObject(400, 450, 1000, 10, 5, 0, 'blue')
+           
 
         elif configNumber == 3 :
             pass
@@ -398,7 +403,7 @@ class Universe:
     def startSimulation(self):
         self.preStart()
 
-        self.setObjectsConfiguration(1)
+        self.setObjectsConfiguration(2)
         self.recordingInformation()
         self.status = 1
         self.firstShow()
