@@ -5,6 +5,7 @@ Technology stack
 - Python3
 - Library Graphics
 - IDE - VSCode
+
 Preparation for work - installation library graphics
 ---
 - Clone project :
