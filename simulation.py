@@ -281,7 +281,7 @@ class Universe:
         if len(args) == 2 :
             objA = self.myobjects[args[0]]
             objB = self.myobjects[args[1]]
-            G = 0.3
+            G = 1
             ABforce = G * objA.mass * objB.mass 
             ABforce /= pow(self.distance[args[0]][args[1]][0], 2)
 
@@ -343,7 +343,7 @@ class Universe:
             self.show()
             #time.sleep(0.1)
 
-            if self.interation == 200:
+            if self.interation == 500:
                 self.quit()
 
 
@@ -382,7 +382,7 @@ class Universe:
 
     def setObjectsConfiguration(self, configNumber):
         if configNumber == 1 :
-            self.newObject(400, 350, 1000, 10, -3, 0, 'red')
+            self.newObject(400, 330, 1000, 10, 4, 0, 'red')
             self.newObject(400, 400, 1700, 12, 0, 0, 'yellow')
             self.myobjects[1].static = True
 
