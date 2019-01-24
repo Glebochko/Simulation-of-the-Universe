@@ -310,13 +310,12 @@ class Universe:
         for i in range(len(self.myobjects)):
             thisObj = self.myobjects[i]
             if not thisObj.static :
-                Vx = thisObj.Vx
-                Vy = thisObj.Vy
-
                 self.getDistance()
                 self.getForce()
                 self.getResultantForce()
 
+                Vx = thisObj.Vx
+                Vy = thisObj.Vy
                 ax = thisObj.resForce[1] / thisObj.mass
                 ay = thisObj.resForce[2] / thisObj.mass
                 Vx += ax
@@ -381,17 +380,29 @@ class Universe:
         self.infoText.draw(self.window)
 
 
+    def setObjectsConfiguration(self, configNumber):
+        if configNumber == 1 :
+            self.newObject(400, 350, 1000, 10, -3, 0, 'red')
+            self.newObject(400, 400, 1700, 12, 0, 0, 'yellow')
+            self.myobjects[1].static = True
+
+        elif configNumber == 2 :
+            self.newObject(40, 50, 1000, 10, -3, 0, 'red')
+            self.newObject(40, 400, 1700, 12, 0, 0, 'yellow')
+            self.newObject(30, 250, 2000, 10, 5, 0, 'blue')
+
+        elif configNumber == 3 :
+            pass
+
+
     def startSimulation(self):
         self.preStart()
 
-        self.newObject(400, 350, 1000, 10, -3, 0, 'red')
-        self.newObject(400, 400, 1700, 12, 0, 0, 'yellow')
-        self.myobjects[1].static = True
-        #self.newObject(30, 200, 2000, 10, 0, 0, 'blue')
-
+        self.setObjectsConfiguration(1)
         self.recordingInformation()
         self.status = 1
         self.firstShow()
+
         self.universeLoop()
 
 
