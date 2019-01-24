@@ -255,8 +255,7 @@ class Universe:
                 rfy = self.myobjects[i].resForce[2]
 
                 rf = sqrt(pow(abs(rfx), 2) + pow(abs(rfy), 2))
-                self.myobjects[i].resForce[0] = rf
-                x = 10                 
+                self.myobjects[i].resForce[0] = rf               
 
 
     def getDistance(self, *args):
@@ -389,11 +388,10 @@ class Universe:
             self.myobjects[1].static = True
 
         elif configNumber == 2 :
-            #self.newObject(400, 350, 1000, 10, -5, 0, 'red')
-            
+            self.newObject(400, 330, 1000, 10, -5, 0, 'red')
             self.newObject(400, 400, 3000, 15, 0, 0, 'yellow')
-            self.myobjects[0].static = True
-            self.newObject(400, 450, 1000, 10, 5, 0, 'blue')
+            self.myobjects[1].static = True
+            self.newObject(400, 470, 1000, 10, 5, 0, 'blue')
            
 
         elif configNumber == 3 :
